@@ -1,0 +1,729 @@
+Directory structure:
+└── /src/
+    ├── test/
+    │   └── java/
+    │       └── com/
+    │           └── apappascs/
+    │               └── spring/
+    │                   └── ai/
+    │                       └── tavily/
+    │                           ├── agent/
+    │                           │   ├── QueryFormulationAgentTests.java
+    │                           │   └── ResponseCurationAgentTests.java
+    │                           ├── SpringAiTavilyExampleApplicationTests.java
+    │                           └── service/
+    │                               └── TavilyApiClientIntegrationTest.java
+    └── main/
+        ├── resources/
+        │   ├── static/
+        │   ├── templates/
+        │   └── application.properties
+        └── java/
+            └── com/
+                └── apappascs/
+                    └── spring/
+                        └── ai/
+                            └── tavily/
+                                ├── agent/
+                                │   ├── ResponseCurationAgent.java
+                                │   └── QueryFormulationAgent.java
+                                ├── SpringAiTavilyExampleApplication.java
+                                ├── service/
+                                │   ├── TavilyApiClient.java
+                                │   └── ChatService.java
+                                └── MainView.java
+
+================================================
+File: /test/java/com/apappascs/spring/ai/tavily/agent/QueryFormulationAgentTests.java
+================================================
+package com.apappascs.spring.ai.tavily.agent;
+
+import com.apappascs.spring.ai.tavily.service.TavilyApiClient;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Slf4j
+@SpringBootTest
+@ActiveProfiles("test")
+class QueryFormulationAgentTests {
+
+	@Autowired
+	private QueryFormulationAgent queryFormulationAgent;
+
+	@Test
+	void formulateQuery_shouldGenerateValidRequest() {
+		String userInput = "Find the latest articles on Spring AI in the last 30 days.";
+
+		// Invoke the query formulation method
+		TavilyApiClient.TavilyRequest request = queryFormulationAgent.formulateQuery(userInput);
+
+		// Validate the generated request
+		assertNotNull(request, "The generated TavilyRequest should not be null.");
+		assertNotNull(request.getQuery(), "The query field in TavilyRequest should not be null.");
+		assertTrue(request.getQuery().contains("Spring AI"), "The query should contain the term 'Spring AI'.");
+		assertTrue(request.getDays() <= 30, "The days field should not exceed 30.");
+
+		log.info("Generated TavilyRequest: {}", request);
+	}
+}
+
+
+================================================
+File: /test/java/com/apappascs/spring/ai/tavily/agent/ResponseCurationAgentTests.java
+================================================
+package com.apappascs.spring.ai.tavily.agent;
+
+import com.apappascs.spring.ai.tavily.service.TavilyApiClient;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Slf4j
+@SpringBootTest
+@ActiveProfiles("test")
+class ResponseCurationAgentTests {
+
+	@Autowired
+	private ResponseCurationAgent responseCurationAgent;
+
+	@Test
+	void curateResponse_shouldGenerateDetailedSummary() {
+		String userMessage = "Tell me about the latest advancements in AI.";
+
+		// Mock TavilyResponse
+		TavilyApiClient.TavilyResponse response = new TavilyApiClient.TavilyResponse();
+		response.setQuery("latest advancements in AI");
+		response.setAnswer("Artificial Intelligence (AI) has seen major advancements recently...");
+		response.setResults(List.of(
+				new TavilyApiClient.TavilyResponse.Result(
+						"AI Breakthroughs",
+						"https://example.com/ai-breakthroughs",
+						"AI is evolving...",
+						null,
+						0.9f,
+						"2025-01-01"
+				),
+				new TavilyApiClient.TavilyResponse.Result(
+						"AI in Healthcare",
+						"https://example.com/ai-healthcare",
+						"AI is transforming healthcare...",
+						null,
+						0.8f,
+						"2025-01-10"
+				)
+		));
+
+		// Invoke the response curation method
+		Flux<String> curatedResponseFlux = responseCurationAgent.curateResponse(userMessage, response);
+
+		// Collect the entire response into a single string for easier assertions
+		String fullCuratedResponse = curatedResponseFlux.collectList()
+				.map(list -> String.join("", list)) // Join the list of tokens into a single string
+				.block(); // Block until the full response is available
+
+		log.info("Full Curated Response: {}", fullCuratedResponse);
+
+		// Assertions on the complete response
+		assertNotNull(fullCuratedResponse, "The curated response should not be null.");
+		assertTrue(fullCuratedResponse.contains("[AI Breakthroughs](https://example.com/ai-breakthroughs)"),
+				"The response should include the 'AI Breakthroughs' source link.");
+		assertTrue(fullCuratedResponse.contains("[AI in Healthcare](https://example.com/ai-healthcare)"),
+				"The response should include the 'AI in Healthcare' source link.");
+	}
+}
+
+================================================
+File: /test/java/com/apappascs/spring/ai/tavily/SpringAiTavilyExampleApplicationTests.java
+================================================
+package com.apappascs.spring.ai.tavily;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class SpringAiTavilyExampleApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+
+
+================================================
+File: /test/java/com/apappascs/spring/ai/tavily/service/TavilyApiClientIntegrationTest.java
+================================================
+package com.apappascs.spring.ai.tavily.service;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+@SpringBootTest
+@ActiveProfiles("test")
+class TavilyApiClientIntegrationTest {
+
+	@Autowired
+	private TavilyApiClient tavilyApiClient;
+
+	@Test
+	void testSearchSuccessWithRealApi() {
+
+		TavilyApiClient.TavilyRequest request = TavilyApiClient.TavilyRequest.builder()
+				.query("Artificial Intelligence")
+				.searchDepth("basic")
+				.topic("news")
+				.days(30)
+				.maxResults(5)
+				.includeImages(false)
+				.build();
+
+		TavilyApiClient.TavilyResponse response = tavilyApiClient.search(request);
+
+		assertNotNull(response);
+		assertEquals("Artificial Intelligence", response.getQuery());
+		assertNotNull(response.getResults());
+		assertFalse(response.getResults().isEmpty(), "Results should not be empty");
+		response.getResults().forEach(result -> {
+			assertNotNull(result.getTitle(), "Title should not be null");
+			assertNotNull(result.getUrl(), "URL should not be null");
+		});
+	}
+}
+
+
+================================================
+File: /main/resources/application.properties
+================================================
+vaadin.launch-browser=true
+spring.application.name=Spring AI Tavily Example
+spring.ai.openai.api-key=${OPENAI_API_KEY}
+spring.ai.openai.chat.options.model=gpt-4o-mini
+tavily.api-key=${TAVILY_API_KEY}
+
+================================================
+File: /main/java/com/apappascs/spring/ai/tavily/agent/ResponseCurationAgent.java
+================================================
+package com.apappascs.spring.ai.tavily.agent;
+
+import java.net.ConnectException;
+
+import com.apappascs.spring.ai.tavily.service.TavilyApiClient;
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+public class ResponseCurationAgent {
+
+	private final ChatClient chatClient;
+
+	public ResponseCurationAgent(ChatClient.Builder chatClientBuilder) {
+		this.chatClient = chatClientBuilder
+				.defaultSystem("""
+                        You are an AI assistant responsible for curating responses based on search results.
+                        Your job is to take user queries and search results, and craft a well-structured,
+                        conversational response that meets the following criteria:
+                        
+                        1. **Detailed Summary**:
+                           Summarize the topic comprehensively using the information from the search results.
+                           Highlight the most relevant insights in a user-friendly and professional tone.
+                        
+                        2. **Source References**:
+                           Include a list of the most relevant sources in markdown format:
+                           - [Source 1 Title](url1)
+                           - [Source 2 Title](url2)
+                           - [Source 3 Title](url3)
+                           Provide up to 5 sources based on their relevance and credibility.
+
+                        3. **Clarity & Accuracy**:
+                           Ensure the response is concise, clear, and backed by the provided data.
+                           Avoid speculation or making assumptions not supported by the search results.
+                        
+                        **Input**:
+                        - `userMessage`: The original user query.
+                        - `searchResults`: A JSON object containing the search results from the Tavily API.
+                        
+                        **Output**:
+                        - A conversational response addressing the user query based on the search results.
+                        """)
+				.defaultAdvisors(new SimpleLoggerAdvisor())
+				.build();
+	}
+
+	public Flux<String> curateResponse(String userMessage, TavilyApiClient.TavilyResponse response) {
+		log.info("Curating response for userMessage: {} with search results", userMessage);
+
+		String formattedInput = String.format("""
+                User Message:
+                %s
+
+                Search Results:
+                %s
+                """, userMessage, response);
+
+		return chatClient.prompt()
+				.user(formattedInput)
+				.stream()
+				.content()
+				.onErrorResume(throwable -> {
+					if (throwable.getCause() instanceof ConnectException) {
+						return Flux.just("Oops! It seems I’m having trouble reaching the server. Please give it a moment and try again soon.");
+					} else {
+						return Flux.just("Something went wrong on my end. I’ll look into it — feel free to try again shortly!");
+					}
+				});
+	}
+}
+
+
+================================================
+File: /main/java/com/apappascs/spring/ai/tavily/agent/QueryFormulationAgent.java
+================================================
+package com.apappascs.spring.ai.tavily.agent;
+
+import com.apappascs.spring.ai.tavily.service.TavilyApiClient;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.stereotype.Component;
+
+@Component
+@Slf4j
+public class QueryFormulationAgent {
+
+	private final ChatClient chatClient;
+
+	public QueryFormulationAgent(ChatClient.Builder chatClientBuilder) {
+		this.chatClient = chatClientBuilder
+				.defaultSystem("""
+                        You are an AI assistant specializing in generating structured search queries for the Tavily API.
+                        Your role is to analyze the user input and construct an effective query object.
+                        Please keep the Default values for each TavilyRequest field in mind when formulating the query.
+                        
+                        Here are the key fields you should fill in:
+                        - **query**: Extract the main search intent or keywords from the user's input.
+                        - **topic**: If the user's input hints at a specific domain (e.g., technology, healthcare, etc.), include it.
+                        - **searchDepth**: Determine whether the search should be "basic" or "detailed" based on user needs.
+                        - **days**: Default to 300 days unless the user specifies a shorter or longer timeframe.
+                        - **maxResults**: If unspecified, default to 10 results.
+                        - **includeImages** and **includeImageDescriptions**: Set to true if the user asks for visual content.
+                        - **includeAnswer** and **includeRawContent**: Enable these fields to improve search comprehensiveness.
+                        - **includeDomains** and **excludeDomains**: If the user specifies domains to focus on or avoid, capture them.
+                        
+                        Your response should always generate a valid JSON representation of the TavilyRequest object.
+                        """)
+				.defaultAdvisors(new SimpleLoggerAdvisor())
+				.build();
+	}
+
+	public TavilyApiClient.TavilyRequest formulateQuery(String userInput) {
+		log.info("Formulating query for user input: {}", userInput);
+
+		return chatClient.prompt()
+				.user(userInput)
+				.call()
+				.entity(TavilyApiClient.TavilyRequest.class);
+	}
+}
+
+================================================
+File: /main/java/com/apappascs/spring/ai/tavily/SpringAiTavilyExampleApplication.java
+================================================
+package com.apappascs.spring.ai.tavily;
+
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.Push;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@Push
+public class SpringAiTavilyExampleApplication implements AppShellConfigurator {
+
+	public static void main(String[] args) {
+		SpringApplication.run(SpringAiTavilyExampleApplication.class, args);
+	}
+
+}
+
+
+================================================
+File: /main/java/com/apappascs/spring/ai/tavily/service/TavilyApiClient.java
+================================================
+package com.apappascs.spring.ai.tavily.service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
+
+/**
+ * Client to interact with the Tavily API using Spring's RestClient.
+ */
+@Component
+@Slf4j
+public class TavilyApiClient {
+
+	private final RestClient restClient;
+
+	/**
+	 * Constructs the TavilyApiClient with a RestClient builder.
+	 *
+	 * @param restClientBuilder the RestClient builder
+	 */
+	public TavilyApiClient(RestClient.Builder restClientBuilder, @Value("${tavily.api-key}") String tavilyApiKey) {
+		this.restClient = restClientBuilder
+				.baseUrl("https://api.tavily.com")
+				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+				.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tavilyApiKey)
+				.build();
+	}
+
+	/**
+	 * Executes a search query against the Tavily API.
+	 *
+	 * @param request The TavilyRequest containing query parameters.
+	 * @return TavilyResponse containing the search results.
+	 */
+	public TavilyResponse search(TavilyRequest request) {
+
+		if (request.getQuery() == null || request.getQuery().isEmpty()) {
+			throw new IllegalArgumentException("Query parameter is required.");
+		}
+		log.info("Received TavilyRequest: {}", request);
+
+		// Build the request payload with all parameters, setting defaults where necessary
+		TavilyRequest requestWithApiKey = TavilyRequest.builder()
+				.query(request.getQuery())
+				.searchDepth(request.getSearchDepth() != null ? request.getSearchDepth() : "basic")
+				.topic(request.getTopic() != null ? request.getTopic() : "general")
+				.days(request.getDays() != null ? request.getDays() : 300)
+				.maxResults(request.getMaxResults() != 0 ? request.getMaxResults() : 10)
+				.includeImages(request.isIncludeImages())
+				.includeImageDescriptions(request.isIncludeImageDescriptions())
+				.includeAnswer(request.isIncludeAnswer())
+				.includeRawContent(request.isIncludeRawContent())
+				.includeDomains(request.getIncludeDomains() != null ? request.getIncludeDomains() : Collections.emptyList())
+				.excludeDomains(request.getExcludeDomains() != null ? request.getExcludeDomains() : Collections.emptyList())
+				.build();
+
+		log.debug("Sending request to Tavily API: query={}, searchDepth={}, topic={}, days={}, maxResults={}",
+				requestWithApiKey.getQuery(),
+				requestWithApiKey.getSearchDepth(),
+				requestWithApiKey.getTopic(),
+				requestWithApiKey.getDays(),
+				requestWithApiKey.getMaxResults());
+
+		try {
+			TavilyResponse response = restClient.post()
+					.uri(uriBuilder -> uriBuilder.path("/search").build())
+					.body(requestWithApiKey)
+					.retrieve()
+					.body(TavilyResponse.class);
+
+			log.info("Received response from Tavily API for query: {}", requestWithApiKey.getQuery());
+			return response;
+		}
+		catch (RestClientResponseException e) {
+			log.error("API Error: Status Code {}, Response Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+			throw new RuntimeException("API Error: " + e.getStatusText(), e);
+		}
+		catch (RestClientException e) {
+			log.error("RestClient Error: {}", e.getMessage());
+			throw new RuntimeException("RestClient Error: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Request object for the Tavily API.
+	 */
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@JsonClassDescription("Request object for the Tavily API")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public static class TavilyRequest {
+
+		@JsonProperty("query")
+		@JsonPropertyDescription("The main search query.")
+		private String query;
+
+		@JsonProperty("api_key")
+		@JsonPropertyDescription("API key for authentication with Tavily.")
+		private String apiKey;
+
+		@JsonProperty("search_depth")
+		@JsonPropertyDescription("The depth of the search. Accepted values: 'basic', 'advanced'. Default is 'basic'.")
+		private String searchDepth;
+
+		@JsonProperty("topic")
+		@JsonPropertyDescription("The category of the search. Accepted values: 'general', 'news'. Default is 'general'.")
+		private String topic;
+
+		@JsonProperty("days")
+		@JsonPropertyDescription("The number of days back from the current date to include in search results. Default is 3. Only applies to 'news' topic.")
+		private Integer days;
+
+		@JsonProperty("time_range")
+		@JsonPropertyDescription("The time range for search results. Accepted values: 'day', 'week', 'month', 'year' or 'd', 'w', 'm', 'y'. Default is none.")
+		private String timeRange;
+
+		@JsonProperty("max_results")
+		@JsonPropertyDescription("The maximum number of search results to return. Default is 5.")
+		private int maxResults;
+
+		@JsonProperty("include_images")
+		@JsonPropertyDescription("Whether to include a list of query-related images in the response. Default is false.")
+		private boolean includeImages;
+
+		@JsonProperty("include_image_descriptions")
+		@JsonPropertyDescription("When 'include_images' is true, adds descriptive text for each image. Default is false.")
+		private boolean includeImageDescriptions;
+
+		@JsonProperty("include_answer")
+		@JsonPropertyDescription("Whether to include a short answer to the query, generated from search results. Default is false.")
+		private boolean includeAnswer;
+
+		@JsonProperty("include_raw_content")
+		@JsonPropertyDescription("Whether to include the cleaned and parsed HTML content of each search result. Default is false.")
+		private boolean includeRawContent;
+
+		@JsonProperty("include_domains")
+		@JsonPropertyDescription("A list of domains to specifically include in search results. Default is an empty list.")
+		private List<String> includeDomains;
+
+		@JsonProperty("exclude_domains")
+		@JsonPropertyDescription("A list of domains to specifically exclude from search results. Default is an empty list.")
+		private List<String> excludeDomains;
+	}
+
+	/**
+	 * Response object for the Tavily API.
+	 */
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@JsonClassDescription("Response object for the Tavily API")
+	public static class TavilyResponse {
+		@JsonProperty("query")
+		private String query;
+
+		@JsonProperty("follow_up_questions")
+		private List<String> followUpQuestions;
+
+		@JsonProperty("answer")
+		private String answer;
+
+		@JsonDeserialize(using = ImageDeserializer.class)
+		@JsonProperty("images")
+		private List<Image> images;
+
+		@JsonProperty("results")
+		private List<Result> results;
+
+		@JsonProperty("response_time")
+		private float responseTime;
+
+		@Data
+		@NoArgsConstructor
+		@AllArgsConstructor
+		public static class Image {
+			@JsonProperty("url")
+			private String url;
+
+			@JsonProperty("description")
+			private String description;
+		}
+
+		@Data
+		@NoArgsConstructor
+		@AllArgsConstructor
+		public static class Result {
+			@JsonProperty("title")
+			private String title;
+
+			@JsonProperty("url")
+			private String url;
+
+			@JsonProperty("content")
+			private String content;
+
+			@JsonProperty("raw_content")
+			private String rawContent;
+
+			@JsonProperty("score")
+			private float score;
+
+			@JsonProperty("published_date")
+			private String publishedDate;
+		}
+	}
+
+	public static class ImageDeserializer extends JsonDeserializer<List<TavilyResponse.Image>> {
+		@Override
+		public List<TavilyApiClient.TavilyResponse.Image> deserialize(JsonParser jsonParser, DeserializationContext context)
+				throws IOException {
+
+			JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+			List<TavilyApiClient.TavilyResponse.Image> images = new ArrayList<>();
+
+			if (node.isArray()) {
+				for (JsonNode element : node) {
+					// If element is a string, treat it as a URL
+					if (element.isTextual()) {
+						images.add(new TavilyApiClient.TavilyResponse.Image(element.asText(), null));
+					}
+					// If element is an object, map it to Image
+					else if (element.isObject()) {
+						String url = element.has("url") ? element.get("url").asText() : null;
+						String description = element.has("description") ? element.get("description").asText() : null;
+						images.add(new TavilyApiClient.TavilyResponse.Image(url, description));
+					}
+				}
+			}
+
+			return images;
+		}
+	}
+}
+
+================================================
+File: /main/java/com/apappascs/spring/ai/tavily/service/ChatService.java
+================================================
+package com.apappascs.spring.ai.tavily.service;
+
+import com.apappascs.spring.ai.tavily.agent.QueryFormulationAgent;
+import com.apappascs.spring.ai.tavily.agent.ResponseCurationAgent;
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.stereotype.Service;
+
+import reactor.core.publisher.Flux;
+
+@Service
+@RequiredArgsConstructor
+public class ChatService {
+
+	private final QueryFormulationAgent queryFormulationAgent;
+	private final ResponseCurationAgent responseCurationAgent;
+	private final TavilyApiClient tavilyApiClient;
+
+	/**
+	 * Handles the flow of query formulation, Tavily search, and response curation to generate a curated response.
+	 *
+	 */
+	public Flux<String> generateCuratedResponse(String userInput) {
+		// Formulate the query
+		TavilyApiClient.TavilyRequest tavilyRequest = queryFormulationAgent.formulateQuery(userInput);
+		// Perform the Tavily search
+		TavilyApiClient.TavilyResponse tavilyResponse = tavilyApiClient.search(tavilyRequest);
+		// Curate the response
+		return responseCurationAgent.curateResponse(userInput, tavilyResponse);
+	}
+}
+
+
+================================================
+File: /main/java/com/apappascs/spring/ai/tavily/MainView.java
+================================================
+package com.apappascs.spring.ai.tavily;
+
+import com.apappascs.spring.ai.tavily.service.ChatService;
+import com.vaadin.flow.component.messages.MessageInput;
+import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
+import org.vaadin.firitin.components.messagelist.MarkdownMessage;
+
+import static org.vaadin.firitin.components.messagelist.MarkdownMessage.Color.AVATAR_PRESETS;
+
+@Route("")
+@PageTitle("Spring AI Chat")
+class MainView extends VerticalLayout {
+
+	VerticalLayout messageList = new VerticalLayout();
+	MessageInput messageInput = new MessageInput();
+	Scroller messageScroller = new Scroller(messageList);
+
+	public MainView(ChatService chatService) {
+		add(messageScroller, messageInput);
+		setSizeFull();
+		setMargin(false);
+		messageScroller.setSizeFull();
+		messageInput.setWidthFull();
+
+		messageInput.addSubmitListener(event -> {
+			String userInput = event.getValue();
+
+			// Display the user's input
+			MarkdownMessage userMessage = new MarkdownMessage(userInput, "You", AVATAR_PRESETS[1]);
+			messageList.add(userMessage);
+			userMessage.scrollIntoView();
+
+			// Prepare assistant's response container
+			MarkdownMessage assistantMessage = new MarkdownMessage("...", "Assistant", AVATAR_PRESETS[2]);
+			messageList.add(assistantMessage);
+			assistantMessage.scrollIntoView();
+
+			// Generate curated response via ChatService
+			chatService.generateCuratedResponse(userInput)
+					.subscribe(assistantMessage::appendMarkdownAsync);
+			assistantMessage.scrollIntoView();
+		});
+	}
+}
+
+
