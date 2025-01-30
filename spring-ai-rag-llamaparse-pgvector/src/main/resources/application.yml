@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: "spring-ai-rag-llamaParse-pgvector"
+  ai:
+    chat:
+      observations:
+        include-completion: true
+        include-prompt: true
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: "gpt-4o-mini"
+    vectorstore:
+      observations:
+        include-query-response: true
+      pgvector:
+        initialize-schema: true
+        index-type: hnsw
+
+llama-cloud:
+  api-key: ${LLAMA_CLOUD_API_KEY}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: metrics,health
+
+logging:
+  level:
+    org.springframework.ai.rag: debug
