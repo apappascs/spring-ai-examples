@@ -1,0 +1,665 @@
+Directory structure:
+└── /src/
+    └── main/
+        ├── resources/
+        │   ├── content_creation_workflow.bpmn
+        │   └── application.yaml
+        └── java/
+            └── com/
+                └── apappascs/
+                    └── spring/
+                        └── ai/
+                            └── workflow/
+                                └── camunda/
+                                    ├── Application.java
+                                    └── service/
+                                        ├── TavilyApiClient.java
+                                        ├── WriterAgent.java
+                                        ├── SearchAgent.java
+                                        └── EmailFormatterAgent.java
+
+================================================
+File: /main/resources/content_creation_workflow.bpmn
+================================================
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0w65rud" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.32.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.22.0">
+  <bpmn:process id="spring-ai-workflow-camunda-process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="startEvent" name="Start Workflow">
+      <bpmn:outgoing>Flow_13ft92t</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_13ft92t" sourceRef="startEvent" targetRef="searchAgentTask" />
+    <bpmn:serviceTask id="writerAgentTask" name="Write Blog Post" camunda:delegateExpression="${writerAgent}">
+      <bpmn:incoming>Flow_1t869an</bpmn:incoming>
+      <bpmn:outgoing>Flow_08gaatx</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1t869an" sourceRef="searchAgentTask" targetRef="writerAgentTask" />
+    <bpmn:serviceTask id="searchAgentTask" name="Search Content" camunda:delegateExpression="${searchAgent}">
+      <bpmn:incoming>Flow_13ft92t</bpmn:incoming>
+      <bpmn:outgoing>Flow_1t869an</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="emailAgentTask" name="Convert to Email" camunda:delegateExpression="${emailAgent}">
+      <bpmn:incoming>Flow_08gaatx</bpmn:incoming>
+      <bpmn:outgoing>Flow_04x2g74</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_08gaatx" sourceRef="writerAgentTask" targetRef="emailAgentTask" />
+    <bpmn:endEvent id="endEvent" name="End Workflow">
+      <bpmn:incoming>Flow_04x2g74</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_04x2g74" sourceRef="emailAgentTask" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="spring-ai-workflow-camunda-process">
+      <bpmndi:BPMNShape id="Activity_1kj618a_di" bpmnElement="searchAgentTask">
+        <dc:Bounds x="250" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05xdkpu_di" bpmnElement="writerAgentTask">
+        <dc:Bounds x="390" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1thhri6_di" bpmnElement="emailAgentTask">
+        <dc:Bounds x="525" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ynmx4b_di" bpmnElement="endEvent">
+        <dc:Bounds x="662" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="646" y="145" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="startEvent">
+        <dc:Bounds x="172" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="154" y="145" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_13ft92t_di" bpmnElement="Flow_13ft92t">
+        <di:waypoint x="208" y="120" />
+        <di:waypoint x="250" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1t869an_di" bpmnElement="Flow_1t869an">
+        <di:waypoint x="350" y="120" />
+        <di:waypoint x="390" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08gaatx_di" bpmnElement="Flow_08gaatx">
+        <di:waypoint x="490" y="120" />
+        <di:waypoint x="525" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04x2g74_di" bpmnElement="Flow_04x2g74">
+        <di:waypoint x="625" y="120" />
+        <di:waypoint x="662" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+
+
+================================================
+File: /main/resources/application.yaml
+================================================
+camunda.bpm:
+  admin-user:
+    id: admin
+    password: admin
+    firstName: Demo
+  filter:
+    create: All tasks
+
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+  sendgrid:
+    api-key: ${SENDGRIG_API_KEY}
+
+tavily:
+  api-key: ${TAVILY_API_KEY}
+
+================================================
+File: /main/java/com/apappascs/spring/ai/workflow/camunda/Application.java
+================================================
+package com.apappascs.spring.ai.workflow.camunda;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class Application {
+
+  public static void main(String... args) {
+    SpringApplication.run(Application.class, args);
+  }
+
+}
+
+
+================================================
+File: /main/java/com/apappascs/spring/ai/workflow/camunda/service/TavilyApiClient.java
+================================================
+package com.apappascs.spring.ai.workflow.camunda.service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
+
+/**
+ * Client to interact with the Tavily API using Spring's RestClient.
+ */
+@Slf4j
+@Component
+public class TavilyApiClient {
+
+	private final RestClient restClient;
+
+	/**
+	 * Constructs the TavilyApiClient with a RestClient builder.
+	 *
+	 * @param restClientBuilder the RestClient builder
+	 */
+	public TavilyApiClient(RestClient.Builder restClientBuilder, @Value("${tavily.api-key}") String tavilyApiKey) {
+		this.restClient = restClientBuilder
+				.baseUrl("https://api.tavily.com")
+				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+				.defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tavilyApiKey)
+				.build();
+	}
+
+	/**
+	 * Executes a search query against the Tavily API.
+	 *
+	 * @param request The TavilyRequest containing query parameters.
+	 * @return TavilyResponse containing the search results.
+	 */
+	public TavilyResponse search(TavilyRequest request) {
+
+		if (request.getQuery() == null || request.getQuery().isEmpty()) {
+			throw new IllegalArgumentException("Query parameter is required.");
+		}
+		log.info("Received TavilyRequest: {}", request);
+
+		// Build the request payload with all parameters, setting defaults where necessary
+		TavilyRequest requestWithApiKey = TavilyRequest.builder()
+				.query(request.getQuery())
+				.searchDepth(request.getSearchDepth() != null ? request.getSearchDepth() : "basic")
+				.topic(request.getTopic() != null ? request.getTopic() : "general")
+				.days(request.getDays() != null ? request.getDays() : 300)
+				.maxResults(request.getMaxResults() != 0 ? request.getMaxResults() : 10)
+				.includeImages(request.isIncludeImages())
+				.includeImageDescriptions(request.isIncludeImageDescriptions())
+				.includeAnswer(request.isIncludeAnswer())
+				.includeRawContent(request.isIncludeRawContent())
+				.includeDomains(request.getIncludeDomains() != null ? request.getIncludeDomains() : Collections.emptyList())
+				.excludeDomains(request.getExcludeDomains() != null ? request.getExcludeDomains() : Collections.emptyList())
+				.build();
+
+		log.debug("Sending request to Tavily API: query={}, searchDepth={}, topic={}, days={}, maxResults={}",
+				requestWithApiKey.getQuery(),
+				requestWithApiKey.getSearchDepth(),
+				requestWithApiKey.getTopic(),
+				requestWithApiKey.getDays(),
+				requestWithApiKey.getMaxResults());
+
+		try {
+			TavilyResponse response = restClient.post()
+					.uri(uriBuilder -> uriBuilder.path("/search").build())
+					.body(requestWithApiKey)
+					.retrieve()
+					.body(TavilyResponse.class);
+
+			log.info("Received response from Tavily API for query: {}", requestWithApiKey.getQuery());
+			return response;
+		}
+		catch (RestClientResponseException e) {
+			log.error("API Error: Status Code {}, Response Body: {}", e.getStatusCode(), e.getResponseBodyAsString());
+			throw new RuntimeException("API Error: " + e.getStatusText(), e);
+		}
+		catch (RestClientException e) {
+			log.error("RestClient Error: {}", e.getMessage());
+			throw new RuntimeException("RestClient Error: " + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Request object for the Tavily API.
+	 */
+	@Data
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@JsonClassDescription("Request object for the Tavily API")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public static class TavilyRequest {
+
+		@JsonProperty("query")
+		@JsonPropertyDescription("The main search query.")
+		private String query;
+
+		@JsonProperty("api_key")
+		@JsonPropertyDescription("API key for authentication with Tavily.")
+		private String apiKey;
+
+		@JsonProperty("search_depth")
+		@JsonPropertyDescription("The depth of the search. Accepted values: 'basic', 'advanced'. Default is 'basic'.")
+		private String searchDepth;
+
+		@JsonProperty("topic")
+		@JsonPropertyDescription("The category of the search. Accepted values: 'general', 'news'. Default is 'general'.")
+		private String topic;
+
+		@JsonProperty("days")
+		@JsonPropertyDescription("The number of days back from the current date to include in search results. Default is 3. Only applies to 'news' topic.")
+		private Integer days;
+
+		@JsonProperty("time_range")
+		@JsonPropertyDescription("The time range for search results. Accepted values: 'day', 'week', 'month', 'year' or 'd', 'w', 'm', 'y'. Default is none.")
+		private String timeRange;
+
+		@JsonProperty("max_results")
+		@JsonPropertyDescription("The maximum number of search results to return. Default is 5.")
+		private int maxResults;
+
+		@JsonProperty("include_images")
+		@JsonPropertyDescription("Whether to include a list of query-related images in the response. Default is false.")
+		private boolean includeImages;
+
+		@JsonProperty("include_image_descriptions")
+		@JsonPropertyDescription("When 'include_images' is true, adds descriptive text for each image. Default is false.")
+		private boolean includeImageDescriptions;
+
+		@JsonProperty("include_answer")
+		@JsonPropertyDescription("Whether to include a short answer to the query, generated from search results. Default is false.")
+		private boolean includeAnswer;
+
+		@JsonProperty("include_raw_content")
+		@JsonPropertyDescription("Whether to include the cleaned and parsed HTML content of each search result. Default is false.")
+		private boolean includeRawContent;
+
+		@JsonProperty("include_domains")
+		@JsonPropertyDescription("A list of domains to specifically include in search results. Default is an empty list.")
+		private List<String> includeDomains;
+
+		@JsonProperty("exclude_domains")
+		@JsonPropertyDescription("A list of domains to specifically exclude from search results. Default is an empty list.")
+		private List<String> excludeDomains;
+	}
+
+	/**
+	 * Response object for the Tavily API.
+	 */
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@JsonClassDescription("Response object for the Tavily API")
+	public static class TavilyResponse {
+		@JsonProperty("query")
+		private String query;
+
+		@JsonProperty("follow_up_questions")
+		private List<String> followUpQuestions;
+
+		@JsonProperty("answer")
+		private String answer;
+
+		@JsonDeserialize(using = ImageDeserializer.class)
+		@JsonProperty("images")
+		private List<Image> images;
+
+		@JsonProperty("results")
+		private List<Result> results;
+
+		@JsonProperty("response_time")
+		private float responseTime;
+
+		@Data
+		@NoArgsConstructor
+		@AllArgsConstructor
+		public static class Image {
+			@JsonProperty("url")
+			private String url;
+
+			@JsonProperty("description")
+			private String description;
+		}
+
+		@Data
+		@NoArgsConstructor
+		@AllArgsConstructor
+		public static class Result {
+			@JsonProperty("title")
+			private String title;
+
+			@JsonProperty("url")
+			private String url;
+
+			@JsonProperty("content")
+			private String content;
+
+			@JsonProperty("raw_content")
+			private String rawContent;
+
+			@JsonProperty("score")
+			private float score;
+
+			@JsonProperty("published_date")
+			private String publishedDate;
+		}
+	}
+
+	public static class ImageDeserializer extends JsonDeserializer<List<TavilyResponse.Image>> {
+		@Override
+		public List<TavilyApiClient.TavilyResponse.Image> deserialize(JsonParser jsonParser, DeserializationContext context)
+				throws IOException {
+
+			JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+			List<TavilyApiClient.TavilyResponse.Image> images = new ArrayList<>();
+
+			if (node.isArray()) {
+				for (JsonNode element : node) {
+					// If element is a string, treat it as a URL
+					if (element.isTextual()) {
+						images.add(new TavilyApiClient.TavilyResponse.Image(element.asText(), null));
+					}
+					// If element is an object, map it to Image
+					else if (element.isObject()) {
+						String url = element.has("url") ? element.get("url").asText() : null;
+						String description = element.has("description") ? element.get("description").asText() : null;
+						images.add(new TavilyApiClient.TavilyResponse.Image(url, description));
+					}
+				}
+			}
+
+			return images;
+		}
+	}
+}
+
+
+================================================
+File: /main/java/com/apappascs/spring/ai/workflow/camunda/service/WriterAgent.java
+================================================
+package com.apappascs.spring.ai.workflow.camunda.service;
+
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.delegate.JavaDelegate;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Service("writerAgent")
+public class WriterAgent implements JavaDelegate {
+
+	private final ChatClient chatClient;
+
+	public WriterAgent(ChatClient.Builder chatClientBuilder) {
+		this.chatClient = chatClientBuilder
+				.defaultSystem("""
+                        You are an AI assistant tasked with writing concise and engaging blog posts.
+                        Given a user topic and search results, your goal is to craft a short blog post that explains the topic.
+                        The blog post should be easy to understand, well-organized, and should be no more than 250 words.
+
+                        Consider this structure:
+
+                        1.  **Introduction:** Briefly introduce the topic.
+                        2.  **Key Points:** Highlight the most important aspects, benefits, or findings from the search results.
+                        3.  **Conclusion:** Briefly summarize the key takeaways.
+
+                        **Input:**
+                        -   `userTopic`: The topic of the blog post.
+                        -   `searchResults`: A JSON object containing search results.
+
+                        **Output:**
+                        -   A concise and well-written blog post. Do NOT use Markdown formatting.
+                        """)
+				.defaultAdvisors(new SimpleLoggerAdvisor())
+				.build();
+	}
+
+	@Override
+	public void execute(DelegateExecution execution) {
+		log.info("WriterAgent: Starting to write blog post...");
+
+		String userTopic = (String) execution.getVariable("userTopic");
+		if (userTopic == null || userTopic.isEmpty()) {
+			userTopic = "General Topic";
+		}
+
+		Object searchResults = execution.getVariable("searchResults");
+		if (searchResults == null) {
+			searchResults = "No search results available.";
+		}
+
+		String prompt = String.format("""
+                User Topic: %s
+
+                Search Results: %s
+                """, userTopic, searchResults);
+
+		String blogPostContent = chatClient.prompt()
+				.user(prompt)
+				.call()
+				.content();
+
+		execution.setVariable("blogPostContent", blogPostContent);
+		log.info("WriterAgent: Blog post written.");
+	}
+}
+
+
+================================================
+File: /main/java/com/apappascs/spring/ai/workflow/camunda/service/SearchAgent.java
+================================================
+package com.apappascs.spring.ai.workflow.camunda.service;
+
+import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.delegate.JavaDelegate;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service("searchAgent")
+public class SearchAgent implements JavaDelegate {
+
+	private final ChatClient chatClient;
+	private final TavilyApiClient tavilyApiClient;
+
+	public SearchAgent(ChatClient.Builder chatClientBuilder, TavilyApiClient tavilyApiClient) {
+		this.chatClient = chatClientBuilder
+				.defaultSystem("""
+                        You are an AI assistant specializing in generating structured search queries for the Tavily API.
+                        Your role is to analyze the user input and construct an effective query object.
+                        Please keep the Default values for each TavilyRequest field in mind when formulating the query.
+                        
+                        Here are the key fields you should fill in:
+                        - **query**: Extract the main search intent or keywords from the user's input.
+                        - **topic**: Accepted values: 'general', 'news'
+                        - **searchDepth**: Determine whether the search should be "basic" or "detailed" based on user needs. Set to basic unless specified otherwise.
+                        - **days**: Default to 300 days unless the user specifies a shorter or longer timeframe.
+                        - **maxResults**: If unspecified, default to 10 results.
+                        - **includeImages** and **includeImageDescriptions**: Set to true if the user asks for visual content.
+                        - **includeAnswer** and **includeRawContent**: Enable these fields to improve search comprehensiveness.
+                        - **includeDomains** and **excludeDomains**: If the user specifies domains to focus on or avoid, capture them.
+                        
+                        Your response should always generate a valid JSON representation of the TavilyRequest object.
+                        """)
+				.defaultAdvisors(new SimpleLoggerAdvisor())
+				.build();
+		this.tavilyApiClient = tavilyApiClient;
+	}
+
+	public TavilyApiClient.TavilyRequest formulateQuery(String userInput) {
+		log.info("Formulating query for user input: {}", userInput);
+
+		return chatClient.prompt()
+				.user(userInput)
+				.call()
+				.entity(TavilyApiClient.TavilyRequest.class);
+	}
+
+	@Override
+	public void execute(DelegateExecution execution) {
+		log.info("SearchAgent: Starting search...");
+		String userTopic = "Spring AI and Camunda";
+		execution.setVariable("userTopic", userTopic);
+		TavilyApiClient.TavilyRequest springAiAndCamunda = formulateQuery(userTopic);
+		TavilyApiClient.TavilyResponse searchResults = tavilyApiClient.search(springAiAndCamunda);
+		execution.setVariable("searchResults", searchResults);
+		log.info("SearchAgent: Search complete. Results stored.");
+	}
+}
+
+
+================================================
+File: /main/java/com/apappascs/spring/ai/workflow/camunda/service/EmailFormatterAgent.java
+================================================
+package com.apappascs.spring.ai.workflow.camunda.service;
+
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import java.io.IOException;
+
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
+import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.engine.delegate.DelegateExecution;
+import org.camunda.bpm.engine.delegate.JavaDelegate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
+import org.springframework.stereotype.Service;
+
+@Service("emailAgent")
+@Slf4j
+public class EmailFormatterAgent implements JavaDelegate {
+
+	@Value("${EMAIL_RECIPIENT}")
+	private String recipientEmail;
+
+	@Value("${EMAIL_SENDER}")
+	private String senderEmail;
+
+	private final SendGrid sendGrid;
+
+	private final ChatClient chatClient;
+
+	public EmailFormatterAgent(SendGrid sendGrid, ChatClient.Builder chatClientBuilder) {
+		this.sendGrid = sendGrid;
+		this.chatClient = chatClientBuilder
+				.defaultSystem("""
+                        You are an AI assistant tasked with converting a blog post into well-formatted HTML suitable for email.
+                        Given a plain text blog post, your goal is to format it with HTML tags for structure and styling.
+                        Focus on creating a readable and visually appealing email.
+
+                        Use these HTML elements:
+                            <h2> for headings
+                            <p> for paragraphs
+                            <ul> and <li> for bulleted lists
+
+                        **Input:**
+                        -   `blogPostContent`: The plain text content of the blog post.
+
+                        **Output:**
+                        -   Well-formatted HTML for the blog post, suitable for embedding in an email.
+                        **Do not include any code delimiters (e.g., ```html or ```) in the output.**
+                        """)
+				.defaultAdvisors(new SimpleLoggerAdvisor())
+				.build();
+	}
+
+	@Override
+	public void execute(DelegateExecution execution) {
+		log.info("EmailFormatterAgent: Formatting blog post for email...");
+
+		String blogPostContent = (String) execution.getVariable("blogPostContent");
+
+		if (blogPostContent == null || blogPostContent.isEmpty()) {
+			blogPostContent = "Apologies, but we were unable to generate content for this email.";
+		}
+
+		String prompt = String.format("""
+                Blog Post Content:
+                %s
+                """, blogPostContent);
+
+		String emailContent = chatClient.prompt()
+				.user(prompt)
+				.call()
+				.content();
+
+		execution.setVariable("emailContent", emailContent);
+		log.info("EmailFormatterAgent: Email formatted.");
+
+		try {
+			sendEmail(recipientEmail, "Your New Blog Post!", emailContent);
+			log.info("EmailFormatterAgent: Email sent successfully to {}", recipientEmail);
+		}
+		catch (IOException e) {
+			log.error("Error sending email: {}", e.getMessage(), e);
+			throw new RuntimeException("Failed to send email", e);
+		}
+	}
+
+	public void sendEmail(String toEmail, String subject, String htmlContent) throws IOException {
+		Email from = new Email(senderEmail);
+		Email to = new Email(toEmail);
+		Content content = new Content("text/html", htmlContent);
+		Mail mail = new Mail(from, subject, to, content);
+
+		Request request = new Request();
+		try {
+			request.setMethod(Method.POST);
+			request.setEndpoint("mail/send");
+			request.setBody(mail.build());
+			Response response = sendGrid.api(request);
+			if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+				log.info("Email sent successfully! Status code: {}", response.getStatusCode());
+			}
+			else {
+				log.error("Email sending failed. Status code: {}, Body: {}", response.getStatusCode(), response.getBody());
+				throw new IOException("Failed to send email: " + response.getStatusCode() + " - " + response.getBody());
+			}
+		}
+		catch (IOException ex) {
+			log.error("Error sending email (SendGrid API call failed): {}", ex.getMessage(), ex);
+			throw ex;
+		}
+	}
+}
+
+

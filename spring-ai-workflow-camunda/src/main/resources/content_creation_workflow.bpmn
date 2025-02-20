@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0w65rud" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.32.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.22.0">
+  <bpmn:process id="spring-ai-workflow-camunda-process" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:startEvent id="startEvent" name="Start Workflow">
+      <bpmn:outgoing>Flow_13ft92t</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_13ft92t" sourceRef="startEvent" targetRef="searchAgentTask" />
+    <bpmn:serviceTask id="writerAgentTask" name="Write Blog Post" camunda:delegateExpression="${writerAgent}">
+      <bpmn:incoming>Flow_1t869an</bpmn:incoming>
+      <bpmn:outgoing>Flow_08gaatx</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1t869an" sourceRef="searchAgentTask" targetRef="writerAgentTask" />
+    <bpmn:serviceTask id="searchAgentTask" name="Search Content" camunda:delegateExpression="${searchAgent}">
+      <bpmn:incoming>Flow_13ft92t</bpmn:incoming>
+      <bpmn:outgoing>Flow_1t869an</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="emailAgentTask" name="Convert to Email" camunda:delegateExpression="${emailAgent}">
+      <bpmn:incoming>Flow_08gaatx</bpmn:incoming>
+      <bpmn:outgoing>Flow_04x2g74</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_08gaatx" sourceRef="writerAgentTask" targetRef="emailAgentTask" />
+    <bpmn:endEvent id="endEvent" name="End Workflow">
+      <bpmn:incoming>Flow_04x2g74</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_04x2g74" sourceRef="emailAgentTask" targetRef="endEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="spring-ai-workflow-camunda-process">
+      <bpmndi:BPMNShape id="Activity_1kj618a_di" bpmnElement="searchAgentTask">
+        <dc:Bounds x="250" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05xdkpu_di" bpmnElement="writerAgentTask">
+        <dc:Bounds x="390" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1thhri6_di" bpmnElement="emailAgentTask">
+        <dc:Bounds x="525" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ynmx4b_di" bpmnElement="endEvent">
+        <dc:Bounds x="662" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="646" y="145" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="startEvent">
+        <dc:Bounds x="172" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="154" y="145" width="72" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_13ft92t_di" bpmnElement="Flow_13ft92t">
+        <di:waypoint x="208" y="120" />
+        <di:waypoint x="250" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1t869an_di" bpmnElement="Flow_1t869an">
+        <di:waypoint x="350" y="120" />
+        <di:waypoint x="390" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08gaatx_di" bpmnElement="Flow_08gaatx">
+        <di:waypoint x="490" y="120" />
+        <di:waypoint x="525" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04x2g74_di" bpmnElement="Flow_04x2g74">
+        <di:waypoint x="625" y="120" />
+        <di:waypoint x="662" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

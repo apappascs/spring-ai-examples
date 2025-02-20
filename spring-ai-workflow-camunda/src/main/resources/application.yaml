@@ -1,0 +1,20 @@
+camunda.bpm:
+  admin-user:
+    id: admin
+    password: admin
+    firstName: Demo
+  filter:
+    create: All tasks
+
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o-mini
+  sendgrid:
+    api-key: ${SENDGRIG_API_KEY}
+
+tavily:
+  api-key: ${TAVILY_API_KEY}
