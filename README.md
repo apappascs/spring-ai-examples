@@ -8,6 +8,7 @@ This repository contains a collection of examples demonstrating various use case
 *   [**spring-ai-mcp-client**](model-context-protocol/spring-ai-mcp-client/README.md): Shows a Spring AI client that uses the Model Context Protocol (MCP) to interact with a remote AI model (Brave Search in this example).
 *   [**spring-ai-rag-llamaparse-pgvector**](spring-ai-rag-llamaparse-pgvector/README.md): Demonstrates a Retrieval-Augmented Generation (RAG) application using Spring AI, LlamaParse for intelligent document parsing, and PGvector as the vector store for efficient similarity search.
 *   [**spring-ai-workflow-camunda**](spring-ai-workflow-camunda/README.md): This example showcases the integration of Spring AI with Camunda for building a workflow that generates and sends an email. It utilizes the Tavily API for search, Spring AI for blog post creation and HTML formatting, and SendGrid for sending emails.
+*   [**spring-ai-deepseek**](spring-ai-deepseek/README.md): Demonstrates the integration of Spring AI with the DeepSeek Chat model, showcasing REST endpoints for both standard and streaming responses, along with tool calling for date/time operations.
 
 ## Getting Started
 
