@@ -1,0 +1,54 @@
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.iws
+.idea_modules/
+*.ipr
+out/
+
+### Gradle ###
+.gradle
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Node.js ###
+node_modules/
+frontend/generated/
+
+### Spring Tool Suite ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### Logs ###
+*.log
+
+### Operating System Files ###
+.DS_Store
+Thumbs.db
+
+### Help File ###
+HELP.md
+
+### Additional Files ###
+*.swp
+*.swo
+*.bak
+*.tmp
+
+### Java ###
+*.class
+*.jar
+*.war
+*.ear
+
+### Lombok ###
+.lombok*/
