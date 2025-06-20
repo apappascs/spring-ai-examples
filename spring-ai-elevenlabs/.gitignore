@@ -53,3 +53,6 @@ HELP.md
 
 ### Lombok ###
 .lombok*/
+
+### Output files ###
+*.mp3
