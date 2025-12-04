@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Spring AI Voice Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --spring-green: #6db33f;
+            --spring-green-dark: #5a9c35;
+            --spring-green-light: #7dc24e;
+        }
+
+        .wave {
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(45deg, var(--spring-green), var(--spring-green-light));
+            margin: 0 3px;
+            border-radius: 20px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .wave:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .wave:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .wave:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .wave:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                height: 20px;
+            }
+
+            50% {
+                height: 60px;
+            }
+        }
+
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+
+            80%,
+            100% {
+                transform: scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        .spring-gradient {
+            background: linear-gradient(135deg, #6db33f 0%, #5a9c35 100%);
+        }
+
+        .spring-gradient-hover:hover {
+            background: linear-gradient(135deg, #5a9c35 0%, #4a8629 100%);
+        }
+
+        /* Modern Clean UI & Ethereal Orb */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* The Ethereal Orb */
+        .orb-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 260px;
+            /* More breathing room */
+            width: 100%;
+            position: relative;
+        }
+
+        /* Refined Orb - Ultra Premium Ethereal */
+        .orb {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            position: relative;
+            z-index: 10;
+
+            /* Key change: Masking for sharp edges */
+            overflow: hidden;
+            /* Hardware acceleration for smooth masking */
+            transform: translateZ(0);
+
+            background: #fff;
+            box-shadow:
+                0 20px 50px rgba(0, 0, 0, 0.1),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* The Internal Gradient Mesh - Soft & Blended */
+        .orb::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+
+            /* Rich, multi-color conic gradient matching the new reference */
+            background: conic-gradient(from 180deg at 50% 50%,
+                    #4facfe 0%,
+                    /* Cyan */
+                    #a8e063 33%,
+                    /* Green */
+                    #fbc2eb 66%,
+                    /* Purple */
+                    #4facfe 100%
+                    /* Back to Cyan */
+                );
+
+            /* Heavy internal blur for blending, scaled to hide edges */
+            filter: blur(40px);
+            transform: scale(1.2);
+
+            /* Constant rotation for the "alive" feel */
+            animation: orb-spin-slow 8s linear infinite;
+        }
+
+        /* Sharp Glossy Reflection - Static */
+        .orb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%,
+                    rgba(255, 255, 255, 0.95) 0%,
+                    rgba(255, 255, 255, 0.2) 30%,
+                    rgba(255, 255, 255, 0) 60%);
+            mix-blend-mode: screen;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes orb-spin-slow {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes orb-pulse-listen {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(79, 172, 254, 0.3);
+                /* Cyan glow */
+            }
+
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 60px rgba(79, 172, 254, 0.5);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(79, 172, 254, 0.3);
+            }
+        }
+
+        @keyframes orb-process {
+            0% {
+                transform: rotate(0deg) scale(0.95);
+                filter: hue-rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.02);
+                filter: hue-rotate(45deg);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(0.95);
+                filter: hue-rotate(0deg);
+            }
+        }
+
+        @keyframes orb-speak {
+            0% {
+                transform: scale(1);
+                filter: hue-rotate(0deg) saturate(1);
+            }
+
+            25% {
+                transform: scale(1.08);
+                filter: hue-rotate(15deg) saturate(1.1);
+            }
+
+            50% {
+                transform: scale(1);
+                filter: hue-rotate(0deg) saturate(1);
+            }
+
+            75% {
+                transform: scale(1.05);
+                filter: hue-rotate(-15deg) saturate(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+                filter: hue-rotate(0deg) saturate(1);
+            }
+        }
+
+        /* States */
+        .orb.idle {
+            animation: orb-spin-slow 20s linear infinite;
+        }
+
+        .orb.listening {
+            animation: orb-pulse-listen 2s ease-in-out infinite;
+        }
+
+        /* Speed up internal rotation for listening */
+        .orb.listening::before {
+            animation: orb-spin-slow 4s linear infinite;
+        }
+
+        .orb.processing {
+            /* No outer animation */
+        }
+
+        .orb.processing::before {
+            animation: orb-spin-slow 1s linear infinite;
+            filter: blur(40px) hue-rotate(90deg);
+        }
+
+        .orb.speaking {
+            animation: orb-speak 2s ease-in-out infinite;
+        }
+
+        .orb.speaking::before {
+            animation: orb-spin-slow 6s linear infinite;
+            filter: blur(40px) saturate(1.2);
+        }
+
+        /* Control Button - Rounded Square (Squircle) */
+        .btn-control {
+            width: 72px;
+            height: 72px;
+            border-radius: 24px;
+            /* Squircle shape */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            z-index: 20;
+        }
+
+        .btn-control .btn-icon {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-control:hover .btn-icon {
+            transform: scale(1.1);
+        }
+
+        .btn-control:active {
+            transform: scale(0.95);
+        }
+
+        /* Start State - Tactile Green */
+        .btn-start {
+            background-color: #f0fdf4;
+            /* Very light green bg */
+            color: #15803d;
+            /* Strong green icon */
+            box-shadow:
+                0 4px 12px rgba(22, 163, 74, 0.15),
+                0 1px 2px rgba(22, 163, 74, 0.1);
+            border: 1px solid rgba(22, 163, 74, 0.1);
+        }
+
+        .btn-start:hover {
+            background-color: #dcfce7;
+            box-shadow:
+                0 8px 16px rgba(22, 163, 74, 0.2),
+                0 2px 4px rgba(22, 163, 74, 0.1);
+        }
+
+        /* Stop State - Tactile Red */
+        .btn-stop {
+            background-color: #fef2f2;
+            /* Very light red bg */
+            color: #b91c1c;
+            /* Strong red icon */
+            box-shadow:
+                0 4px 12px rgba(220, 38, 38, 0.15),
+                0 1px 2px rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.1);
+        }
+
+        .btn-stop:hover {
+            background-color: #fee2e2;
+            box-shadow:
+                0 8px 16px rgba(220, 38, 38, 0.2),
+                0 2px 4px rgba(220, 38, 38, 0.1);
+        }
+    </style>
+</head>
+
+<body class="h-screen bg-gray-50 flex items-center justify-center p-6">
+
+    <div class="flex items-center justify-center w-full max-w-lg">
+        <div
+            class="bg-white rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.08)] p-12 w-full aspect-square flex flex-col justify-between relative">
+
+            <!-- Header -->
+            <div class="text-center z-10">
+                <div class="flex items-center justify-center mb-4">
+                    <img src="https://spring.io/img/projects/spring-ai.svg" alt="Spring AI"
+                        class="h-12 w-12 opacity-90">
+                </div>
+                <h1 class="text-2xl font-semibold mb-3 text-gray-800 tracking-tight">Spring AI Assistant</h1>
+                <p id="status" class="text-gray-400 text-sm font-medium tracking-wide">Ready to help</p>
+            </div>
+
+            <!-- Orb Visualization -->
+            <div id="orb-display" class="flex justify-center items-center flex-grow -mt-4">
+                <div class="orb-container">
+                    <div id="ai-orb" class="orb idle"></div>
+                </div>
+            </div>
+
+            <!-- Call Button Utility Zone -->
+            <div class="flex justify-center relative z-10">
+                <div id="pulse-ring" class="hidden absolute inset-0 rounded-full pulse-ring"
+                    style="background-color: rgba(109, 179, 63, 0.1);"></div>
+
+                <button id="callButton" class="btn-control btn-start">
+
+                    <!-- Mic Icon (Start) -->
+                    <svg id="phoneIcon" xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+
+                    <!-- Stop Icon (End) -->
+                    <svg id="phoneOffIcon" xmlns="http://www.w3.org/2000/svg" class="btn-icon hidden" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Hidden audio player -->
+            <audio id="audioPlayer" class="hidden"></audio>
+
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isCallActive = false;
+        let isProcessing = false;
+
+        const callButton = document.getElementById('callButton');
+        const phoneIcon = document.getElementById('phoneIcon');
+        const phoneOffIcon = document.getElementById('phoneOffIcon');
+        const status = document.getElementById('status');
+        const orbDisplay = document.getElementById('orb-display');
+        const aiOrb = document.getElementById('ai-orb');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const pulseRing = document.getElementById('pulse-ring');
+
+        callButton.addEventListener('click', handleCall);
+
+        async function handleCall() {
+            if (!isCallActive) {
+                await startCall();
+            } else {
+                endCall();
+            }
+        }
+
+        async function startCall() {
+            try {
+                isCallActive = true;
+                updateUI('connecting');
+
+                // Get microphone permission
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+
+                // Play greeting
+                updateUI('greeting');
+                const greetingResponse = await fetch('/voice/greeting/stream');
+                const greetingBlob = await greetingResponse.blob();
+                audioPlayer.src = URL.createObjectURL(greetingBlob);
+
+                audioPlayer.onended = () => {
+                    startListening();
+                };
+
+                await audioPlayer.play();
+
+            } catch (error) {
+                console.error('Error starting call:', error);
+                alert('Please allow microphone access to use voice assistant');
+                endCall();
+            }
+        }
+
+        function startListening() {
+            updateUI('listening');
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                if (isCallActive) {
+                    await processAudio();
+                }
+            };
+
+            mediaRecorder.start();
+
+            // Auto-stop after 10 seconds
+            setTimeout(() => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+            }, 10000);
+        }
+
+        async function processAudio() {
+            updateUI('processing');
+            isProcessing = true;
+
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+
+            try {
+                const response = await fetch('/voice/chat/stream', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const responseBlob = await response.blob();
+                    audioPlayer.src = URL.createObjectURL(responseBlob);
+
+                    updateUI('speaking');
+                    audioPlayer.onended = () => {
+                        isProcessing = false;
+                        if (isCallActive) {
+                            startListening();
+                        }
+                    };
+
+                    await audioPlayer.play();
+                } else {
+                    alert('Error processing your message');
+                    endCall();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error communicating with assistant');
+                endCall();
+            }
+        }
+
+        function endCall() {
+            isCallActive = false;
+            isProcessing = false;
+
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+
+            if (mediaRecorder && mediaRecorder.stream) {
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            }
+
+            audioPlayer.pause();
+            audioPlayer.src = '';
+
+            updateUI('disconnected');
+        }
+
+        function updateUI(state) {
+            // Reset orb classes
+            aiOrb.className = 'orb';
+
+            switch (state) {
+                case 'connecting':
+                    status.textContent = 'Connecting...';
+                    status.className = 'text-gray-500 text-sm font-medium tracking-wide';
+                    orbDisplay.classList.remove('hidden'); // Keep orb visible but idle
+                    aiOrb.classList.add('idle');
+                    pulseRing.classList.add('hidden');
+                    break;
+                case 'greeting':
+                    status.textContent = 'AI is speaking...';
+                    status.className = 'text-black text-sm font-medium tracking-wide';
+
+                    aiOrb.classList.add('speaking');
+
+                    phoneIcon.classList.add('hidden');
+                    phoneOffIcon.classList.remove('hidden');
+
+                    // Change button to stop style
+                    callButton.classList.remove('btn-start');
+                    callButton.classList.add('btn-stop');
+
+                    pulseRing.classList.add('hidden');
+                    break;
+                case 'listening':
+                    status.textContent = 'Listening...';
+                    status.className = 'text-green-600 text-sm font-medium tracking-wide';
+
+                    aiOrb.classList.add('listening');
+                    pulseRing.classList.remove('hidden');
+                    break;
+                case 'processing':
+                    status.textContent = 'Thinking...';
+                    status.className = 'text-purple-500 text-sm font-medium tracking-wide';
+
+                    aiOrb.classList.add('processing');
+                    pulseRing.classList.add('hidden');
+                    break;
+                case 'speaking':
+                    status.textContent = 'AI is speaking...';
+                    status.className = 'text-black text-sm font-medium tracking-wide';
+
+                    aiOrb.classList.add('speaking');
+                    pulseRing.classList.add('hidden');
+                    break;
+                case 'disconnected':
+                    status.textContent = 'Ready to help';
+                    status.className = 'text-gray-400 text-sm font-medium tracking-wide';
+
+                    aiOrb.classList.add('idle');
+
+                    phoneIcon.classList.remove('hidden');
+                    phoneOffIcon.classList.add('hidden');
+
+                    // Reset button
+                    callButton.classList.remove('btn-stop');
+                    callButton.classList.add('btn-start');
+
+                    pulseRing.classList.add('hidden');
+                    break;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
