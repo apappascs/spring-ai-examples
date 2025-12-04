@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="speechFragment" class="mb-8">
+    <div class="inline-block bg-blue-300 rounded-lg p-2 ml-auto font-semibold" th:text="${messageIn.message}">Message</div>
+    <div class="mt-4">
+        <audio controls class="w-full">
+            <source th:src="'data:audio/mpeg;base64,' + ${audioBase64}" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+</div>
+</body>
+</html>
